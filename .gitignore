@@ -1,0 +1,13 @@
+# Base de Datos SQLite
+*.sqlite
+*.sqlite3
+*.db
+database.sqlite
+
+# Archivos de usuarios
+/uploads/
+
+# Archivos del sistema y logs
+*.log
+.DS_Store
+Thumbs.db
