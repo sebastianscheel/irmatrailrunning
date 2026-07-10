@@ -752,17 +752,41 @@ body.theme-light .dropdown-menu-dark .dropdown-item:hover {
     border: 1px solid var(--border-color);
 }
 
-.carousel-premium-img {
+.carousel-item {
+    position: relative;
     height: 550px;
-    object-fit: cover;
-    object-position: center;
-    filter: brightness(0.65) contrast(1.05);
+    overflow: hidden;
+}
+
+.carousel-premium-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: blur(18px) brightness(0.4);
+    transform: scale(1.1); /* Evita bordes blancos por el blur */
+    z-index: 1;
     transition: transform 12s ease;
 }
 
-/* Ken Burns effect: subtle zoom on active slide image */
-.carousel-item.active .carousel-premium-img {
-    transform: scale(1.08);
+/* Ken Burns effect: zoom blurred background */
+.carousel-item.active .carousel-premium-background {
+    transform: scale(1.18);
+}
+
+.carousel-premium-img-foreground {
+    position: relative;
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    margin: 0 auto;
+    display: block;
+    z-index: 2;
+    filter: brightness(0.9) contrast(1.02);
 }
 
 /* Glassmorphic caption styles */
@@ -819,6 +843,7 @@ body.theme-light .dropdown-menu-dark .dropdown-item:hover {
     justify-content: center;
     color: #fff;
     text-decoration: none;
+    z-index: 15; /* Asegura que queden encima de las leyendas y slides */
 }
 
 .carousel-control-prev-premium { left: 20px; }
@@ -860,7 +885,7 @@ body.theme-light .dropdown-menu-dark .dropdown-item:hover {
 
 /* Responsiveness overrides */
 @media (max-width: 768px) {
-    .carousel-premium-img {
+    .carousel-item {
         height: 350px;
     }
     .carousel-caption-premium {

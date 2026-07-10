@@ -143,7 +143,8 @@ require_once __DIR__ . '/includes/navbar.php';
             <div class="carousel-inner">
                 <!-- Slide 1 -->
                 <div class="carousel-item active">
-                    <img src="/assets/img/c1.jpg" class="d-block w-100 carousel-premium-img" alt="Comunidad de Montaña">
+                    <div class="carousel-premium-background" style="background-image: url('/assets/img/c1.jpg');"></div>
+                    <img src="/assets/img/c1.jpg" class="carousel-premium-img-foreground" alt="Comunidad de Montaña">
                     <div class="carousel-caption-premium d-none d-md-block">
                         <h3>Comunidad de Montaña</h3>
                         <p>Compartimos la pasión por la naturaleza, el compañerismo y la motivación mutua en cada entrenamiento.</p>
@@ -151,7 +152,8 @@ require_once __DIR__ . '/includes/navbar.php';
                 </div>
                 <!-- Slide 2 -->
                 <div class="carousel-item">
-                    <img src="/assets/img/c2.jpg" class="d-block w-100 carousel-premium-img" alt="Superación Personal">
+                    <div class="carousel-premium-background" style="background-image: url('/assets/img/c2.jpg');"></div>
+                    <img src="/assets/img/c2.jpg" class="carousel-premium-img-foreground" alt="Superación Personal">
                     <div class="carousel-caption-premium d-none d-md-block">
                         <h3>Superación Personal</h3>
                         <p>Planes personalizados adaptados a tus objetivos individuales para conquistar nuevas cumbres.</p>
@@ -159,7 +161,8 @@ require_once __DIR__ . '/includes/navbar.php';
                 </div>
                 <!-- Slide 3 -->
                 <div class="carousel-item">
-                    <img src="/assets/img/c3.jpg" class="d-block w-100 carousel-premium-img" alt="Entrenamientos Grupales">
+                    <div class="carousel-premium-background" style="background-image: url('/assets/img/c3.jpg');"></div>
+                    <img src="/assets/img/c3.jpg" class="carousel-premium-img-foreground" alt="Entrenamientos Grupales">
                     <div class="carousel-caption-premium d-none d-md-block">
                         <h3>Entrenamientos Grupales</h3>
                         <p>Sumate a nuestras clases presenciales con corrección técnica, fuerza y cuestas en Bariloche.</p>
@@ -167,7 +170,8 @@ require_once __DIR__ . '/includes/navbar.php';
                 </div>
                 <!-- Slide 4 -->
                 <div class="carousel-item">
-                    <img src="/assets/img/c5.jpg" class="d-block w-100 carousel-premium-img" alt="Exploración sin Límites">
+                    <div class="carousel-premium-background" style="background-image: url('/assets/img/c5.jpg');"></div>
+                    <img src="/assets/img/c5.jpg" class="carousel-premium-img-foreground" alt="Exploración sin Límites">
                     <div class="carousel-caption-premium d-none d-md-block">
                         <h3>Exploración sin Límites</h3>
                         <p>Corré por senderos únicos, descubrí bosques mágicos y paisajes inigualables de la Patagonia.</p>
@@ -175,7 +179,8 @@ require_once __DIR__ . '/includes/navbar.php';
                 </div>
                 <!-- Slide 5 -->
                 <div class="carousel-item">
-                    <img src="/assets/img/c6.jpg" class="d-block w-100 carousel-premium-img" alt="Inspiración en Movimiento">
+                    <div class="carousel-premium-background" style="background-image: url('/assets/img/c6.jpg');"></div>
+                    <img src="/assets/img/c6.jpg" class="carousel-premium-img-foreground" alt="Inspiración en Movimiento">
                     <div class="carousel-caption-premium d-none d-md-block">
                         <h3>Inspiración en Movimiento</h3>
                         <p>Como Irma, demostramos que no existen límites de edad ni de tiempo para disfrutar del running.</p>
