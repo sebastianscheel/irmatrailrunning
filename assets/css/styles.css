@@ -48,19 +48,29 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Glassmorphism Navbar */
+.navbar-header-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    background: var(--bg-primary);
+}
+
+.navbar-top-bar {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.5rem 1.5rem;
+}
+
 .navbar-custom {
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
-    border-bottom: 1px solid var(--border-color);
-    padding: 0.8rem 1.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 1030;
+    padding: 0.3rem 1.5rem !important;
     transition: all 0.3s ease;
 }
 
-.navbar-custom .navbar-brand {
+.navbar-header-wrapper .navbar-brand {
     font-family: var(--font-titles);
     font-weight: 800;
     font-size: 1.5rem;
@@ -70,7 +80,7 @@ h1, h2, h3, h4, h5, h6 {
     gap: 0.5rem;
 }
 
-.navbar-custom .navbar-brand span {
+.navbar-header-wrapper .navbar-brand span {
     color: var(--trail-orange);
 }
 
@@ -237,8 +247,8 @@ h1, h2, h3, h4, h5, h6 {
 .badge-fondo { background-color: var(--trail-orange-glow); color: var(--trail-orange); }
 .badge-cuestas { background-color: rgba(231, 111, 81, 0.2); color: #e76f51; }
 .badge-pasadas { background-color: rgba(74, 144, 226, 0.2); color: #4a90e2; }
-.badge-fuerza { background-color: rgba(155, 89, 182, 0.2); color: #9b59b6; }
-.badge-descanso { background-color: rgba(108, 117, 125, 0.2); color: var(--text-secondary); }
+.badge-cambios-de-ritmo { background-color: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+.badge-bici { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; }
 
 /* Forms */
 .form-control-custom {
@@ -329,4 +339,555 @@ footer a:hover {
     border: 1px solid var(--forest-green);
     color: var(--text-primary);
     border-radius: 8px;
+}
+
+/* Custom Dark Modals */
+.modal-custom, .modal-content {
+    background-color: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--card-shadow) !important;
+    color: var(--text-primary) !important;
+}
+
+.modal-header, .modal-footer {
+    border-color: var(--border-color) !important;
+}
+
+/* Fix close button inside dark modals */
+.modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+}
+
+/* Ensure custom selects and inputs are readable in dark modals */
+.modal-body select.form-select, 
+.modal-body input.form-control,
+.modal-body textarea.form-control {
+    background-color: var(--bg-tertiary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.modal-body select.form-select:focus, 
+.modal-body input.form-control:focus,
+.modal-body textarea.form-control:focus {
+    border-color: var(--trail-orange) !important;
+    box-shadow: 0 0 8px var(--trail-orange-glow) !important;
+}
+
+.modal-body .form-label-custom {
+    color: var(--text-secondary) !important;
+}
+
+/* Corrección global de contraste para todos los inputs y selectores del sistema */
+input.form-control,
+select.form-select,
+textarea.form-control,
+input.form-control-custom,
+select.form-select-custom,
+textarea.form-control-custom,
+.form-control,
+.form-select,
+input,
+select,
+textarea,
+option {
+    background-color: var(--bg-tertiary) !important;
+    color: #ffffff !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Forzar textos de mensajes vacíos o secundarios importantes a color blanco para legibilidad */
+.text-secondary, 
+.text-muted, 
+p.text-secondary, 
+.text-center.text-secondary, 
+.text-center.py-5.text-secondary,
+p.text-muted {
+    color: #e2e8f0 !important; /* gris muy claro casi blanco */
+}
+
+input.form-control:focus,
+select.form-select:focus,
+textarea.form-control:focus,
+.form-control:focus,
+.form-select:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    background-color: var(--bg-tertiary) !important;
+    color: #ffffff !important;
+    border-color: var(--trail-orange) !important;
+    box-shadow: 0 0 8px var(--trail-orange-glow) !important;
+}
+
+.form-label, .form-label-custom {
+    color: var(--text-secondary) !important;
+}
+
+/* Clase para el badge bg-trail con alto contraste */
+.bg-trail {
+    background-color: var(--trail-orange) !important;
+    color: #000000 !important;
+}
+
+/* Tarjeta de Carreras con colores más llamativos y degradados premium */
+.card-carrera-glow {
+    background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%) !important;
+    border: 2px solid var(--trail-orange) !important;
+    box-shadow: 0 8px 32px rgba(217, 125, 84, 0.15) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.card-carrera-glow:hover {
+    border-color: #ffffff !important;
+    box-shadow: 0 12px 40px rgba(217, 125, 84, 0.3) !important;
+    transform: translateY(-5px) scale(1.02);
+}
+
+/* Evitar desbordamiento del navbar reduciendo paddings en pantallas medianas y portátiles */
+@media (max-width: 1440px) {
+    .navbar-custom {
+        padding: 0.2rem 1rem !important;
+    }
+    .navbar-custom .nav-link {
+        padding: 0.4rem 0.4rem !important;
+        font-size: 0.8rem !important;
+    }
+    .navbar-header-wrapper .navbar-brand {
+        font-size: 1.25rem !important;
+    }
+    .navbar-header-wrapper .navbar-brand img {
+        width: 32px !important;
+        height: 32px !important;
+    }
+}
+
+/* Light Theme overrides for Dashboard */
+body.theme-light {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    --bg-primary: #f8f9fa;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f1f3f5;
+    --border-color: #dee2e6;
+    
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --text-muted: #6c757d;
+}
+
+body.theme-light .text-white,
+body.theme-light .text-white-50 {
+    color: #212529 !important;
+}
+
+body.theme-light .text-secondary, 
+body.theme-light .text-muted, 
+body.theme-light p.text-secondary, 
+body.theme-light .text-center.text-secondary, 
+body.theme-light .text-center.py-5.text-secondary,
+body.theme-light p.text-muted,
+body.theme-light .form-label-custom {
+    color: #495057 !important;
+}
+
+body.theme-light .card-premium {
+    background-color: #ffffff !important;
+    border-color: #dee2e6 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+}
+
+body.theme-light .card-header-premium {
+    background-color: #f8f9fa !important;
+    border-bottom-color: #dee2e6 !important;
+}
+
+body.theme-light input.form-control,
+body.theme-light select.form-select,
+body.theme-light textarea.form-control,
+body.theme-light input.form-control-custom,
+body.theme-light select.form-select-custom,
+body.theme-light textarea.form-control-custom,
+body.theme-light .form-control,
+body.theme-light .form-select,
+body.theme-light input:not(.form-check-input),
+body.theme-light select,
+body.theme-light textarea,
+body.theme-light option {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border-color: #ced4da !important;
+}
+
+body.theme-light input.form-control:focus,
+body.theme-light select.form-select:focus,
+body.theme-light textarea.form-control:focus,
+body.theme-light .form-control:focus,
+body.theme-light .form-select:focus,
+body.theme-light input:not(.form-check-input):focus,
+body.theme-light select:focus,
+body.theme-light textarea:focus {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border-color: var(--trail-orange) !important;
+    box-shadow: 0 0 8px rgba(217, 125, 84, 0.25) !important;
+}
+
+body.theme-light .table-dark {
+    --bs-table-bg: #ffffff;
+    --bs-table-color: #212529;
+    --bs-table-border-color: #dee2e6;
+    --bs-table-striped-bg: #f8f9fa;
+    --bs-table-hover-bg: #f1f3f5;
+    background-color: #ffffff;
+    color: #212529;
+}
+
+body.theme-light .table-dark th,
+body.theme-light .table-dark td,
+body.theme-light .table-dark tr.bg-dark {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+body.theme-light .bg-dark {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+body.theme-light .routine-day-card {
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+body.theme-light .file-upload-wrapper {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+body.theme-light .navbar-top-bar {
+    background: #212323 !important;
+    border-bottom-color: #383b3b !important;
+}
+
+body.theme-light .navbar-header-wrapper {
+    background: #191a1a !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+}
+
+body.theme-light .navbar-custom .nav-link {
+    color: #f0f2f2 !important;
+}
+
+body.theme-light .navbar-custom .nav-link:hover,
+body.theme-light .navbar-custom .nav-link.active {
+    color: var(--trail-orange) !important;
+}
+
+body.theme-light .navbar-brand {
+    color: #ffffff !important;
+}
+
+body.theme-light .navbar-top-bar .text-secondary,
+body.theme-light .navbar-top-bar .text-muted {
+    color: #a3a8a8 !important;
+}
+
+body.theme-light .modal-custom, 
+body.theme-light .modal-content {
+    background-color: #ffffff !important;
+    border-color: #dee2e6 !important;
+    color: #212529 !important;
+}
+
+body.theme-light .modal-header, 
+body.theme-light .modal-footer {
+    border-color: #dee2e6 !important;
+}
+
+body.theme-light .modal-header .btn-close {
+    filter: invert(0) grayscale(0%) brightness(100%) !important;
+}
+
+/* Light Theme overrides for Buttons */
+body.theme-light .btn-outline-light {
+    color: #495057 !important;
+    border-color: #ced4da !important;
+}
+body.theme-light .btn-outline-light:hover {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+}
+
+/* Make footer dark like the header */
+body.theme-light footer {
+    background-color: #191a1a !important;
+    border-top-color: #383b3b !important;
+    color: #a3a8a8 !important;
+}
+body.theme-light footer .text-white,
+body.theme-light footer .text-secondary,
+body.theme-light footer p,
+body.theme-light footer a {
+    color: #a3a8a8 !important;
+}
+body.theme-light footer a:hover {
+    color: var(--trail-orange) !important;
+}
+
+/* Fix checkbox visibility in light mode */
+body.theme-light .form-check-input {
+    background-color: #fff !important;
+    border-color: #ced4da !important;
+}
+
+body.theme-light .form-check-input:checked {
+    background-color: var(--trail-orange) !important;
+    border-color: var(--trail-orange) !important;
+}
+
+/* Novedades / Feed de Actividad */
+.novelty-item {
+    border-radius: 8px;
+    margin-bottom: 8px;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.novelty-item:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.novelty-item.cumple-hoy {
+    border-left: 4px solid #ffc107 !important;
+    background: rgba(255, 193, 7, 0.05) !important;
+}
+
+.novelty-item.cumple-proximo {
+    border-left: 4px solid rgba(255, 193, 7, 0.3) !important;
+}
+
+.novelty-item.novedad-comentario {
+    border-left: 4px solid #0dcaf0 !important;
+}
+
+/* Evitar que el modo claro rompa los colores del header y del dropdown de notificaciones que permanecen oscuros */
+body.theme-light .navbar-top-bar .text-white,
+body.theme-light #notifDropdownBtn.text-white,
+body.theme-light #notifDropdownBtn .fa-bell {
+    color: #ffffff !important;
+}
+
+body.theme-light .dropdown-menu-dark .text-white {
+    color: #ffffff !important;
+}
+
+body.theme-light .dropdown-menu-dark .text-secondary {
+    color: #a3a8a8 !important;
+}
+
+body.theme-light .dropdown-menu-dark .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* ==========================================================================
+   Tablas: Estilo Claro e Intercalado (Zebra Striping Blanco / Gris Claro)
+   ========================================================================== */
+.table {
+    --bs-table-bg: #ffffff !important;
+    --bs-table-color: #212529 !important;
+    --bs-table-border-color: #dee2e6 !important;
+    --bs-table-hover-bg: #f1f3f5 !important;
+    color: var(--bs-table-color) !important;
+    border-color: var(--bs-table-border-color) !important;
+}
+
+/* Forzar fondo blanco por defecto en todas las celdas */
+.table > :not(caption) > * > * {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border-bottom-color: #dee2e6 !important;
+}
+
+/* Cabeceras de tabla */
+.table thead tr > * {
+    background-color: #f8f9fa !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    font-weight: 700 !important;
+    color: #495057 !important;
+}
+
+/* Intercalar fila clara (blanca) y oscura (gris claro suave) - Zebra */
+.table tbody tr:nth-of-type(odd) > * {
+    background-color: #ffffff !important;
+}
+
+.table tbody tr:nth-of-type(even) > * {
+    background-color: #ebebeb !important; /* Gris un poco más marcado */
+}
+
+/* Hover state */
+.table tbody tr:hover > * {
+    background-color: var(--trail-orange-glow) !important;
+    transition: background-color 0.2s ease;
+}
+
+/* Ajustes para tablas anidadas o específicas si es necesario */
+.table-dark {
+    /* Desactivar explícitamente table-dark si estaba puesta en el HTML */
+    --bs-table-bg: #ffffff;
+    --bs-table-striped-bg: #f8f9fa;
+}
+
+/* ==========================================================================
+   Premium Carousel Section
+   ========================================================================== */
+.carousel-premium-container {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-color);
+}
+
+.carousel-premium-img {
+    height: 550px;
+    object-fit: cover;
+    object-position: center;
+    filter: brightness(0.65) contrast(1.05);
+    transition: transform 12s ease;
+}
+
+/* Ken Burns effect: subtle zoom on active slide image */
+.carousel-item.active .carousel-premium-img {
+    transform: scale(1.08);
+}
+
+/* Glassmorphic caption styles */
+.carousel-caption-premium {
+    position: absolute;
+    right: 15%;
+    bottom: 2rem;
+    left: 15%;
+    z-index: 10;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+    color: #fff;
+    text-align: center;
+    background: rgba(25, 26, 26, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.carousel-caption-premium h3 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.carousel-caption-premium p {
+    font-size: 1rem;
+    color: #e2e8f0 !important; /* light grey for text readability */
+    margin-bottom: 0;
+}
+
+/* Control buttons style */
+.carousel-control-prev-premium,
+.carousel-control-next-premium {
+    width: 50px;
+    height: 50px;
+    background: rgba(25, 26, 26, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.8;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+}
+
+.carousel-control-prev-premium { left: 20px; }
+.carousel-control-next-premium { right: 20px; }
+
+.carousel-control-prev-premium:hover,
+.carousel-control-next-premium:hover {
+    background: var(--trail-orange);
+    border-color: var(--trail-orange);
+    color: #ffffff;
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 0 15px rgba(217, 125, 84, 0.4);
+}
+
+/* Indicators styling */
+.carousel-indicators-premium {
+    bottom: -40px;
+    margin-bottom: 0;
+}
+
+.carousel-indicators-premium [data-bs-target] {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--text-muted);
+    border: none;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+    margin: 0 6px;
+}
+
+.carousel-indicators-premium .active {
+    background-color: var(--trail-orange);
+    opacity: 1;
+    transform: scale(1.2);
+    box-shadow: 0 0 8px var(--trail-orange-glow);
+}
+
+/* Responsiveness overrides */
+@media (max-width: 768px) {
+    .carousel-premium-img {
+        height: 350px;
+    }
+    .carousel-caption-premium {
+        position: relative;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        margin: 1.5rem 1rem 0 1rem;
+        padding: 1rem;
+        max-width: 100%;
+        background: var(--bg-secondary);
+        border-color: var(--border-color);
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+    /* Move control buttons on mobile to be clean */
+    .carousel-control-prev-premium { left: 10px; }
+    .carousel-control-next-premium { right: 10px; }
+    .carousel-control-prev-premium,
+    .carousel-control-next-premium {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Mobile caption transitions */
+#mobile-caption-title,
+#mobile-caption-desc {
+    transition: opacity 0.25s ease-in-out;
 }

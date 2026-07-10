@@ -25,7 +25,7 @@ function require_rol($roles_permitidos) {
 
     if (!in_array($_SESSION['user_rol'], $roles_permitidos)) {
         // Redirección forzada según el rol que realmente tenga
-        if (in_array($_SESSION['user_rol'], ['admin', 'entrenador'])) {
+        if (in_array($_SESSION['user_rol'], ['admin', 'entrenador_total', 'entrenador_intermedio', 'entrenador_limitado'])) {
             header("Location: /admin/dashboard.php");
         } else {
             header("Location: /alumno/dashboard.php");
@@ -45,8 +45,9 @@ function check_alumno_status($pdo) {
     }
 
     $stmt = $pdo->prepare("
-        SELECT ap.activo, ap.ddjj_aceptada 
+        SELECT ap.activo, ap.ddjj_aceptada, u.debe_cambiar_password 
         FROM alumno_perfil ap 
+        JOIN usuarios u ON ap.usuario_id = u.id
         WHERE ap.usuario_id = ?
     ");
     $stmt->execute([$_SESSION['user_id']]);
@@ -56,11 +57,20 @@ function check_alumno_status($pdo) {
         // Actualizar datos en sesión para coincidir con la base de datos
         $_SESSION['alumno_activo'] = (int)$perfil['activo'];
         $_SESSION['alumno_ddjj'] = (int)$perfil['ddjj_aceptada'];
+        $_SESSION['debe_cambiar_password'] = (int)$perfil['debe_cambiar_password'];
 
         $current_script = $_SERVER['SCRIPT_NAME'];
         
-        // Si no aceptó la DDJJ y no está ya en la página de DDJJ ni enviando el formulario, redirigir
-        if ($_SESSION['alumno_ddjj'] == 0 && strpos($current_script, 'ddjj.php') === false && strpos($current_script, 'ddjj_action.php') === false) {
+        // 1. Validar si debe cambiar su contraseña por primera vez o por reseteo
+        if ($_SESSION['debe_cambiar_password'] == 1) {
+            if (strpos($current_script, 'cambiar_password.php') === false && strpos($current_script, 'cambiar_password_action.php') === false && strpos($current_script, 'logout.php') === false) {
+                header("Location: /alumno/cambiar_password.php?forced=1");
+                exit;
+            }
+        }
+        
+        // 2. Si no aceptó la DDJJ y no está ya en la página de DDJJ ni enviando el formulario, redirigir
+        if ($_SESSION['debe_cambiar_password'] == 0 && $_SESSION['alumno_ddjj'] == 0 && strpos($current_script, 'ddjj.php') === false && strpos($current_script, 'ddjj_action.php') === false) {
             header("Location: /alumno/ddjj.php");
             exit;
         }

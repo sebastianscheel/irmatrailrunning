@@ -1,18 +1,21 @@
 <?php
-$page_title = "Mi Perfil";
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../includes/header.php';
-require_once __DIR__ . '/../includes/navbar.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
 // Validar login y rol
 require_rol('alumno');
 
+$page_title = "Mi Perfil";
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/navbar.php';
+
 // Consultar datos de usuario y perfil
 $stmt = $pdo->prepare("
-    SELECT u.nombre, u.apellido, u.email, ap.* 
+    SELECT u.nombre, u.apellido, u.email, u.dni, ap.*, 
+           ent.nombre AS ent_nombre, ent.apellido AS ent_apellido, ent.telefono AS ent_telefono
     FROM usuarios u
     JOIN alumno_perfil ap ON u.id = ap.usuario_id
+    LEFT JOIN usuarios ent ON ap.entrenador_id = ent.id
     WHERE u.id = ?
 ");
 $stmt->execute([$_SESSION['user_id']]);
@@ -23,6 +26,11 @@ if (!$user) {
     exit;
 }
 
+// Check Strava status
+$stmtStrava = $pdo->prepare("SELECT fecha_conexion FROM strava_tokens WHERE alumno_id = ?");
+$stmtStrava->execute([$user['id']]); // $user['id'] refers to ap.id due to ap.* overwriting
+$strava_fecha = $stmtStrava->fetchColumn();
+
 $error_msg = "";
 if (isset($_GET['error'])) {
     switch ($_GET['error']) {
@@ -32,6 +40,11 @@ if (isset($_GET['error'])) {
         case 'invalid_size': $error_msg = "El archivo excede el tamaño máximo permitido de 5MB."; break;
         case 'move_err': $error_msg = "No se pudo guardar el archivo en el servidor. Verifica permisos."; break;
         case 'db': $error_msg = "Ocurrió un problema de base de datos."; break;
+        case 'strava_fail': $error_msg = "Error al conectar con Strava. Inténtalo de nuevo."; break;
+        case 'strava_denied': $error_msg = "Has cancelado la autorización de Strava."; break;
+        case 'no_strava': $error_msg = "Debes conectar tu cuenta de Strava primero."; break;
+        case 'strava_refresh_fail': $error_msg = "La sesión de Strava expiró. Vuelve a conectar."; break;
+        case 'strava_api_fail': $error_msg = "Error al comunicarse con la API de Strava."; break;
     }
 }
 
@@ -40,6 +53,9 @@ if (isset($_GET['msg'])) {
     switch ($_GET['msg']) {
         case 'cert_ok': $success_msg = "¡Certificado médico subido con éxito! Pendiente de aprobación por tu entrenador."; break;
         case 'foto_ok': $success_msg = "¡Foto de perfil actualizada correctamente!"; break;
+        case 'strava_ok': $success_msg = "¡Conexión con Strava establecida exitosamente!"; break;
+        case 'pw_ok': $success_msg = "¡Tu contraseña ha sido cambiada con éxito!"; break;
+        case 'perfil_ok': $success_msg = "¡Datos personales actualizados correctamente!"; break;
     }
 }
 ?>
@@ -95,16 +111,71 @@ if (isset($_GET['msg'])) {
                             <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control form-control-custom" value="<?php echo htmlspecialchars($user['fecha_nacimiento']); ?>" required>
                         </div>
 
-                        <div class="col-12 mt-4 text-end">
-                            <button type="submit" class="btn btn-trail w-100"><i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios</button>
+                        <div class="col-md-6">
+                            <label for="sexo" class="form-label form-label-custom">Sexo *</label>
+                            <select name="sexo" id="sexo" class="form-select form-control-custom" required>
+                                <option value="M" <?php echo ($user['sexo'] === 'M') ? 'selected' : ''; ?>>Masculino</option>
+                                <option value="F" <?php echo ($user['sexo'] === 'F') ? 'selected' : ''; ?>>Femenino</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <div class="d-flex gap-2">
+                                <a href="/alumno/cambiar_password.php" class="btn btn-outline-warning w-50 py-2"><i class="fa-solid fa-key me-2"></i>Cambiar Contraseña</a>
+                                <button type="submit" class="btn btn-trail w-50 py-2"><i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios</button>
+                            </div>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Columna Secundaria (Foto y Certificado) -->
+        <!-- Columna Secundaria (Foto, Entrenador y Certificado) -->
         <div class="col-lg-6 mb-4">
+            
+            <!-- Mi Entrenador -->
+            <div class="card-premium p-4 mb-4">
+                <h4 class="text-white mb-3 fw-bold"><i class="fa-solid fa-user-tie text-warning me-2"></i>Mi Entrenador</h4>
+                <?php if (!empty($user['ent_nombre'])): ?>
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-dark d-flex align-items-center justify-content-center border border-secondary shadow me-3" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-user-tie fa-2x text-trail"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-white fw-bold mb-1"><?php echo htmlspecialchars($user['ent_nombre'] . ' ' . $user['ent_apellido']); ?></h6>
+                            <?php if (!empty($user['ent_telefono'])): ?>
+                                <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $user['ent_telefono']); ?>" target="_blank" class="btn btn-sm btn-outline-success mt-1">
+                                    <i class="fa-brands fa-whatsapp me-1"></i>Contactar
+                                </a>
+                            <?php else: ?>
+                                <small class="text-secondary">Sin teléfono registrado</small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <p class="text-secondary small mb-0"><i class="fa-solid fa-circle-info me-1"></i>Aún no tienes un entrenador asignado. Pronto se contactarán contigo.</p>
+                <?php endif; ?>
+            </div>
+            
+            <!-- Conexión Strava -->
+            <div class="card-premium p-4 mb-4 border border-secondary" style="background-color: rgba(252, 76, 2, 0.05);">
+                <h4 class="fw-bold mb-3" style="color: #fc4c02;"><i class="fa-brands fa-strava me-2"></i>Integración Strava</h4>
+                <?php if ($strava_fecha): ?>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fa-solid fa-link text-success fa-2x me-3"></i>
+                        <div>
+                            <h6 class="text-white fw-bold mb-0">Cuenta Conectada</h6>
+                            <small class="text-secondary">Sincronización activa desde el <?php echo date('d/m/Y', strtotime($strava_fecha)); ?></small>
+                        </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Tus entrenamientos de Garmin, Coros o la app de Strava se sincronizarán automáticamente con Irma Trailrunning al dar clic en 'Sincronizar' en tu Dashboard.</p>
+                <?php else: ?>
+                    <p class="text-secondary small mb-3">Conecta tu cuenta de Strava para que tus entrenamientos (y los de tu reloj inteligente vinculado a Strava) se registren automáticamente en tu planificador.</p>
+                    <a href="/actions/strava_auth.php" class="btn fw-bold w-100" style="background-color: #fc4c02; color: white;">
+                        <i class="fa-brands fa-strava me-2"></i>Conectar con Strava
+                    </a>
+                <?php endif; ?>
+            </div>
             
             <!-- Foto de Perfil -->
             <div class="card-premium p-4 mb-4">
@@ -131,7 +202,7 @@ if (isset($_GET['msg'])) {
             </div>
 
             <!-- Certificado Médico -->
-            <div class="card-premium p-4 h-100 d-flex flex-column justify-content-between">
+            <div class="card-premium p-4 mb-4">
                 <div>
                     <h4 class="text-white mb-3 fw-bold"><i class="fa-solid fa-file-medical text-warning me-2"></i>Certificado Médico</h4>
                     <p class="text-secondary small mb-4">El apto médico es obligatorio y de validez anual para poder realizar los entrenamientos presenciales y a distancia de forma segura.</p>

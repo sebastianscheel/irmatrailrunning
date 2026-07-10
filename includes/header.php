@@ -10,6 +10,8 @@ if (session_status() == PHP_SESSION_NONE) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Gestión de entrenamiento y comunidad de IB Trailrunning. Planifica tus carreras de montaña con profesionales.">
     <title><?php echo isset($page_title) ? $page_title . " - IB Trailrunning" : "IB Trailrunning - Entrenamiento de Montaña"; ?></title>
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/assets/img/logo.jpeg" type="image/jpeg">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,4 +22,8 @@ if (session_status() == PHP_SESSION_NONE) {
     <!-- Custom Premium CSS -->
     <link href="/assets/css/styles.css" rel="stylesheet">
 </head>
-<body>
+<?php
+$is_landing = (basename($_SERVER['PHP_SELF']) == 'index.php' || basename($_SERVER['PHP_SELF']) == 'login.php');
+$body_class = $is_landing ? '' : 'theme-light';
+?>
+<body class="<?php echo $body_class; ?>">

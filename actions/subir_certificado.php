@@ -67,11 +67,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     certificado_medico_comentario = NULL 
                 WHERE usuario_id = ?
             ");
+            
+            $pdo->beginTransaction();
             $stmtUpdate->execute([$db_url, $_SESSION['user_id']]);
+
+            // Obtener alumno_id y entrenador_id
+            $stmtA = $pdo->prepare("SELECT id, entrenador_id FROM alumno_perfil WHERE usuario_id = ?");
+            $stmtA->execute([$_SESSION['user_id']]);
+            $perfil = $stmtA->fetch();
+            $alumno_id = $perfil ? $perfil['id'] : null;
+            $entrenador_id = $perfil ? $perfil['entrenador_id'] : null;
+
+            // Obtener nombre del alumno
+            $stmtName = $pdo->prepare("SELECT nombre, apellido FROM usuarios WHERE id = ?");
+            $stmtName->execute([$_SESSION['user_id']]);
+            $usr = $stmtName->fetch();
+            $alumno_nombre = $usr ? ($usr['nombre'] . ' ' . $usr['apellido']) : 'Un alumno';
+
+            // Registrar auditoría
+            require_once __DIR__ . '/../includes/audit_helper.php';
+            registrarAuditoria($pdo, [
+                'usuario_id' => $_SESSION['user_id'],
+                'accion' => 'subir_certificado',
+                'entidad' => 'perfil',
+                'alumno_id' => $alumno_id,
+                'detalle' => "Subió un nuevo certificado médico para revisión.",
+                'datos_nuevos' => ['certificado_medico_url' => $db_url]
+            ]);
+
+            // Notificar al entrenador
+            if ($entrenador_id) {
+                crearNotificacion(
+                    $pdo, 
+                    $entrenador_id, 
+                    "Apto Médico Cargado", 
+                    "$alumno_nombre subió un nuevo apto médico para su aprobación.", 
+                    "/admin/certificados.php"
+                );
+            }
+
+            $pdo->commit();
 
             header("Location: /alumno/perfil.php?msg=cert_ok");
             exit;
         } catch (PDOException $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             error_log("Error al subir certificado a BD: " . $e->getMessage());
             header("Location: /alumno/perfil.php?error=db");
             exit;

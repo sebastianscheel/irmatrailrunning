@@ -17,10 +17,22 @@ try {
         apellido VARCHAR(100) NOT NULL,
         foto_perfil_url VARCHAR(255) DEFAULT NULL,
         rol ENUM('admin', 'entrenador', 'alumno') NOT NULL DEFAULT 'alumno',
+        reset_token VARCHAR(255) DEFAULT NULL,
+        reset_expires DATETIME DEFAULT NULL,
         fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB;
     ";
     $pdo->exec($sqlUsuarios);
+    
+    // Migración para añadir columnas si la tabla ya existía
+    try {
+        $pdo->exec("ALTER TABLE usuarios ADD COLUMN reset_token VARCHAR(255) DEFAULT NULL AFTER rol");
+        $pdo->exec("ALTER TABLE usuarios ADD COLUMN reset_expires DATETIME DEFAULT NULL AFTER reset_token");
+        echo "✔ Columnas 'reset_token' agregadas exitosamente.<br>";
+    } catch (PDOException $e) {
+        // Ignorar si las columnas ya existen
+    }
+
     echo "✔ Tabla 'usuarios' creada o verificada.<br>";
 
     // 2. Tabla Alumno Perfil

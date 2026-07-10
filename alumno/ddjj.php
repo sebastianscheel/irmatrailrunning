@@ -1,15 +1,12 @@
 <?php
-$page_title = "Declaración Jurada";
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../includes/header.php';
-require_once __DIR__ . '/../includes/navbar.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
 // Validar que esté logueado y sea alumno
 require_rol('alumno');
 
 // Si ya aceptó la DDJJ, no tiene por qué estar aquí
-$stmt = $pdo->prepare("SELECT ddjj_aceptada FROM alumno_perfil WHERE usuario_id = ?");
+$stmt = $pdo->prepare("SELECT ddjj_aceptada, fecha_nacimiento FROM alumno_perfil WHERE usuario_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $perfil = $stmt->fetch();
 
@@ -17,6 +14,20 @@ if ($perfil && $perfil['ddjj_aceptada'] == 1) {
     header("Location: /alumno/dashboard.php");
     exit;
 }
+
+$es_menor = false;
+if ($perfil && !empty($perfil['fecha_nacimiento'])) {
+    $nacimiento = new DateTime($perfil['fecha_nacimiento']);
+    $hoy = new DateTime();
+    $diferencia = $hoy->diff($nacimiento);
+    if ($diferencia->y < 18) {
+        $es_menor = true;
+    }
+}
+
+$page_title = "Declaración Jurada";
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/navbar.php';
 ?>
 
 <div class="container my-5 flex-grow-1">
@@ -52,6 +63,32 @@ if ($perfil && $perfil['ddjj_aceptada'] == 1) {
         </div>
 
         <form action="/actions/ddjj_action.php" method="POST">
+            <?php if ($es_menor): ?>
+                <div class="p-3 bg-dark rounded border border-warning mb-4 text-start">
+                    <h5 class="text-warning fw-bold mb-2"><i class="fa-solid fa-user-shield me-2"></i>Autorización de Padre / Madre o Tutor</h5>
+                    <p class="text-secondary small mb-3">Dado que eres menor de 18 años, es obligatorio que un padre, madre o tutor legal complete sus datos para autorizar tu participación.</p>
+                    
+                    <div class="row g-2">
+                        <div class="col-12 col-md-6 mb-2">
+                            <label for="tutor_nombre" class="form-label form-label-custom">Nombre Completo del Tutor *</label>
+                            <input type="text" name="tutor_nombre" id="tutor_nombre" class="form-control form-control-custom" placeholder="Ej: Maria Perez" required>
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <label for="tutor_dni" class="form-label form-label-custom">DNI del Tutor *</label>
+                            <input type="text" name="tutor_dni" id="tutor_dni" class="form-control form-control-custom" placeholder="Ej: 12345678" required>
+                        </div>
+                        <div class="col-6 col-md-3 mb-2">
+                            <label for="tutor_parentesco" class="form-label form-label-custom">Parentesco *</label>
+                            <select name="tutor_parentesco" id="tutor_parentesco" class="form-select form-control-custom" required>
+                                <option value="Padre">Padre</option>
+                                <option value="Madre">Madre</option>
+                                <option value="Tutor Legal">Tutor Legal</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <div class="form-check mb-4 text-start">
                 <input class="form-check-input" type="checkbox" name="accept_terms" id="accept_terms" required style="cursor: pointer;">
                 <label class="form-check-label text-secondary small" for="accept_terms" style="cursor: pointer; user-select: none;">

@@ -5,7 +5,7 @@ require_once __DIR__ . '/includes/navbar.php';
 
 // Si ya está logueado, redirigir a su dashboard correspondiente
 if (isset($_SESSION['user_rol'])) {
-    if (in_array($_SESSION['user_rol'], ['admin', 'entrenador'])) {
+    if (in_array($_SESSION['user_rol'], ['admin', 'entrenador_total', 'entrenador_intermedio', 'entrenador_limitado'])) {
         header("Location: /admin/dashboard.php");
     } else {
         header("Location: /alumno/dashboard.php");
@@ -58,6 +58,7 @@ if (isset($_GET['error'])) {
             <div class="mb-4">
                 <div class="d-flex justify-content-between mb-1">
                     <label for="password" class="form-label form-label-custom mb-0">Contraseña</label>
+                    <a href="/forgot_password.php" class="text-trail small text-decoration-none">¿Olvidaste tu contraseña?</a>
                 </div>
                 <div class="input-group">
                     <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-lock"></i></span>

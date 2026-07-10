@@ -12,12 +12,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        // Buscamos al usuario por email o por DNI (si es alumno)
+        // Buscamos al usuario por email o por DNI
         $stmt = $pdo->prepare("
             SELECT u.*, ap.activo, ap.ddjj_aceptada 
             FROM usuarios u 
             LEFT JOIN alumno_perfil ap ON u.id = ap.usuario_id 
-            WHERE u.email = ? OR (ap.dni = ? AND u.rol = 'alumno')
+            WHERE u.email = ? OR u.dni = ?
         ");
         $stmt->execute([$identifier, $identifier]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -29,8 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_nombre'] = $user['nombre'];
             $_SESSION['user_apellido'] = $user['apellido'];
             $_SESSION['user_rol'] = $user['rol'];
+            $_SESSION['debe_cambiar_password'] = (int)$user['debe_cambiar_password'];
 
-            if (in_array($user['rol'], ['admin', 'entrenador'])) {
+            if (in_array($user['rol'], ['admin', 'entrenador_total', 'entrenador_intermedio', 'entrenador_limitado'])) {
                 header("Location: /admin/dashboard.php");
             } else {
                 $_SESSION['alumno_activo'] = (int)$user['activo'];

@@ -1,18 +1,19 @@
-﻿<?php
-$page_title = "Control de Certificados";
+<?php
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../includes/header.php';
-require_once __DIR__ . '/../includes/navbar.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
-// Validar rol de administrador
-require_rol(['admin', 'entrenador']);
+// Validar rol de administrador o entrenador total
+require_rol(['admin', 'entrenador_total']);
+
+$page_title = "Control de Certificados";
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/navbar.php';
 
 try {
-    // Consultar todos los alumnos con certificado mÃ©dico cargado
+    // Consultar todos los alumnos con certificado médico cargado
     $stmt = $pdo->query("
         SELECT ap.id AS alumno_id, ap.certificado_medico_url, ap.certificado_medico_estado, 
-               ap.certificado_medico_comentario, ap.dni,
+               ap.certificado_medico_comentario, u.dni,
                u.nombre, u.apellido, u.email
         FROM alumno_perfil ap
         JOIN usuarios u ON ap.usuario_id = u.id
@@ -27,7 +28,7 @@ try {
 $error_msg = "";
 if (isset($_GET['error'])) {
     switch ($_GET['error']) {
-        case 'invalid': $error_msg = "AcciÃ³n o ID de alumno invÃ¡lido."; break;
+        case 'invalid': $error_msg = "Acción o ID de alumno inválido."; break;
         case 'empty_comment': $error_msg = "Debes ingresar un motivo de rechazo obligatoriamente."; break;
         case 'db': $error_msg = "Error interno al guardar los cambios."; break;
     }
@@ -36,8 +37,8 @@ if (isset($_GET['error'])) {
 $success_msg = "";
 if (isset($_GET['msg'])) {
     switch ($_GET['msg']) {
-        case 'aprobado_ok': $success_msg = "Certificado mÃ©dico aprobado con Ã©xito."; break;
-        case 'rechazado_ok': $success_msg = "Certificado mÃ©dico rechazado. Se notificÃ³ el comentario en el panel del alumno."; break;
+        case 'aprobado_ok': $success_msg = "Certificado médico aprobado con éxito."; break;
+        case 'rechazado_ok': $success_msg = "Certificado médico rechazado. Se notificó el comentario en el panel del alumno."; break;
     }
 }
 
@@ -59,8 +60,8 @@ foreach ($certificados as $c) {
 
 <div class="container dashboard-container">
     <div class="mb-4">
-        <h2 class="text-white fw-bold"><i class="fa-solid fa-file-medical text-warning me-2"></i>Control de Certificados MÃ©dicos</h2>
-        <p class="text-secondary mb-0">Revisa los documentos de aptitud fÃ­sica cargados por los alumnos y autoriza su validez.</p>
+        <h2 class="text-white fw-bold"><i class="fa-solid fa-file-medical text-warning me-2"></i>Control de Certificados Médicos</h2>
+        <p class="text-secondary mb-0">Revisa los documentos de aptitud física cargados por los alumnos y autoriza su validez.</p>
     </div>
 
     <!-- Alertas -->
@@ -102,7 +103,7 @@ foreach ($certificados as $c) {
         </ul>
 
         <div class="tab-content" id="certTabsContent">
-            <!-- PestaÃ±a PENDIENTES -->
+            <!-- Pestaña PENDIENTES -->
             <div class="tab-pane fade show active" id="pendientes-pane" role="tabpanel" tabindex="0">
                 <?php if (count($pendientes) > 0): ?>
                     <div class="table-responsive">
@@ -158,7 +159,7 @@ foreach ($certificados as $c) {
                                                         <p class="text-white">Especifica el motivo de rechazo para el alumno <strong><?php echo htmlspecialchars($p['nombre'] . " " . $p['apellido']); ?></strong>:</p>
                                                         <div class="mb-3">
                                                             <label for="comentario<?php echo $p['alumno_id']; ?>" class="form-label form-label-custom">Motivo de Rechazo *</label>
-                                                            <textarea name="comentario" id="comentario<?php echo $p['alumno_id']; ?>" class="form-control form-control-custom" rows="3" placeholder="Ej: Falta la firma del mÃ©dico, el documento estÃ¡ borroso o expirado." required></textarea>
+                                                            <textarea name="comentario" id="comentario<?php echo $p['alumno_id']; ?>" class="form-control form-control-custom" rows="3" placeholder="Ej: Falta la firma del médico, el documento está borroso o expirado." required></textarea>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer border-top border-dark">
@@ -176,12 +177,12 @@ foreach ($certificados as $c) {
                 <?php else: ?>
                     <div class="text-center py-5 text-secondary">
                         <i class="fa-solid fa-clipboard-check fa-3x mb-3 text-muted"></i>
-                        <p class="mb-0">No hay certificados mÃ©dicos pendientes de revisiÃ³n.</p>
+                        <p class="mb-0">No hay certificados médicos pendientes de revisión.</p>
                     </div>
                 <?php endif; ?>
             </div>
 
-            <!-- PestaÃ±a APROBADOS -->
+            <!-- Pestaña APROBADOS -->
             <div class="tab-pane fade" id="aprobados-pane" role="tabpanel" tabindex="0">
                 <?php if (count($aprobados) > 0): ?>
                     <div class="table-responsive">
@@ -212,12 +213,12 @@ foreach ($certificados as $c) {
                     </div>
                 <?php else: ?>
                     <div class="text-center py-5 text-secondary">
-                        <p class="mb-0">No hay certificados aprobados todavÃ­a.</p>
+                        <p class="mb-0">No hay certificados aprobados todavía.</p>
                     </div>
                 <?php endif; ?>
             </div>
 
-            <!-- PestaÃ±a RECHAZADOS -->
+            <!-- Pestaña RECHAZADOS -->
             <div class="tab-pane fade" id="rechazados-pane" role="tabpanel" tabindex="0">
                 <?php if (count($rechazados) > 0): ?>
                     <div class="table-responsive">
