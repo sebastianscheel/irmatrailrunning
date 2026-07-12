@@ -126,7 +126,7 @@ require_once __DIR__ . '/includes/navbar.php';
     <div class="container py-4">
         <div class="text-center mb-5">
             <h2 class="text-white fw-bold display-5">Nuestra <span style="color: var(--trail-orange);">Comunidad</span> en Acción</h2>
-            <p class="text-secondary mx-auto fs-5" style="max-width: 600px;">Viví la experiencia de Irma Trail Running a través de nuestros entrenamientos y desafíos.</p>
+            <p class="text-secondary mx-auto fs-5" style="max-width: 600px;">Viví la experiencia a través de nuestros entrenamientos y desafíos.</p>
         </div>
         
         <div id="premiumCarousel" class="carousel slide carousel-fade carousel-premium-container" data-bs-ride="carousel" data-bs-interval="5000">
@@ -183,7 +183,7 @@ require_once __DIR__ . '/includes/navbar.php';
                     <img src="/assets/img/c6.jpg" class="carousel-premium-img-foreground" alt="Inspiración en Movimiento">
                     <div class="carousel-caption-premium d-none d-md-block">
                         <h3>Inspiración en Movimiento</h3>
-                        <p>Como Irma, demostramos que no existen límites de edad ni de tiempo para disfrutar del running.</p>
+                        <p>No existen límites de edad ni de tiempo para disfrutar del running.</p>
                     </div>
                 </div>
             </div>
