@@ -15,12 +15,35 @@ try {
         SELECT ap.id AS alumno_id, u.nombre, u.apellido, ap.nivel, ap.plan_tipo
         FROM alumno_perfil ap
         JOIN usuarios u ON ap.usuario_id = u.id
-        WHERE ap.activo IN (1, 3)
+        WHERE ap.activo != 0 AND u.rol = 'alumno'
         ORDER BY u.apellido ASC, u.nombre ASC
     ");
     $alumnos = $stmtList->fetchAll();
 } catch (PDOException $e) {
     $alumnos = [];
+}
+
+// Obtener configuración de IA
+try {
+    $stmtIA = $pdo->query("SELECT * FROM configuracion_ia LIMIT 1");
+    $config_ia = $stmtIA->fetch(PDO::FETCH_ASSOC);
+    if (!$config_ia) {
+        $config_ia = [
+            'disciplina' => 'Trail Running',
+            'rol_entrenador' => 'preparador físico experto',
+            'tipos_sesion' => 'Fondo|Fuerza|Pasadas|Regenerativo|Cuestas',
+            'estructura_descripcion' => "Entrada en calor:\nBloque principal:\nVuelta a la calma:",
+            'tono_respuesta' => 'Profesional y motivador'
+        ];
+    }
+} catch (PDOException $e) {
+    $config_ia = [
+        'disciplina' => 'Trail Running',
+        'rol_entrenador' => 'preparador físico experto',
+        'tipos_sesion' => 'Fondo|Fuerza|Pasadas|Regenerativo|Cuestas',
+        'estructura_descripcion' => "Entrada en calor:\nBloque principal:\nVuelta a la calma:",
+        'tono_respuesta' => 'Profesional y motivador'
+    ];
 }
 ?>
 
@@ -36,7 +59,12 @@ try {
         <!-- Formulario de Configuración -->
         <div class="col-lg-4">
             <div class="card-premium p-4 h-100">
-                <h5 class="text-white fw-bold mb-4"><i class="fa-solid fa-sliders text-warning me-2"></i>Configuración del Plan</h5>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="text-white fw-bold mb-0"><i class="fa-solid fa-sliders text-warning me-2"></i>Configuración del Plan</h5>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalConfigIA" title="Configurar personalidad de la IA">
+                        <i class="fa-solid fa-robot"></i> Configurar IA
+                    </button>
+                </div>
                 
                 <form id="formGenerador">
                     <input type="hidden" name="action" value="generar">
@@ -102,7 +130,7 @@ try {
 
                     <!-- Semanas y Días -->
                     <div class="row g-2 mb-3">
-                        <div class="col-6">
+                        <div class="col-12">
                             <label class="form-label form-label-custom">Duración (Semanas) *</label>
                             <select name="semanas" class="form-select form-control-custom" required>
                                 <option value="4">4 Semanas</option>
@@ -111,13 +139,39 @@ try {
                                 <option value="16">16 Semanas</option>
                             </select>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label form-label-custom">Días / Semana *</label>
-                            <select name="dias_semana" class="form-select form-control-custom" required>
-                                <option value="3" selected>3 Días</option>
-                                <option value="4">4 Días</option>
-                                <option value="5">5 Días</option>
-                            </select>
+                        <div class="col-12 mt-3">
+                            <label class="form-label form-label-custom mb-2">Días de Entrenamiento *</label>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dias_seleccionados[]" value="1" id="dia1">
+                                    <label class="form-check-label text-secondary" for="dia1">Lun</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dias_seleccionados[]" value="2" id="dia2">
+                                    <label class="form-check-label text-secondary" for="dia2">Mar</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dias_seleccionados[]" value="3" id="dia3">
+                                    <label class="form-check-label text-secondary" for="dia3">Mié</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dias_seleccionados[]" value="4" id="dia4">
+                                    <label class="form-check-label text-secondary" for="dia4">Jue</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dias_seleccionados[]" value="5" id="dia5">
+                                    <label class="form-check-label text-secondary" for="dia5">Vie</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dias_seleccionados[]" value="6" id="dia6">
+                                    <label class="form-check-label text-secondary" for="dia6">Sáb</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dias_seleccionados[]" value="7" id="dia7">
+                                    <label class="form-check-label text-secondary" for="dia7">Dom</label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback d-none" id="diasError">Debes seleccionar al menos un día.</div>
                         </div>
                     </div>
 
@@ -224,6 +278,14 @@ let planGeneradoGlobal = null;
 // Enviar formulario para generar propuesta
 document.getElementById('formGenerador').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    const checkboxes = document.querySelectorAll('input[name="dias_seleccionados[]"]:checked');
+    if (checkboxes.length === 0) {
+        document.getElementById('diasError').classList.remove('d-none');
+        return;
+    } else {
+        document.getElementById('diasError').classList.add('d-none');
+    }
     
     const formData = new FormData(this);
     const isIA = document.getElementById('modoIA').checked;
@@ -466,5 +528,75 @@ function formatearFechaDisplay(fechaStr) {
     font-size: 0.85rem;
 }
 </style>
+
+<!-- Modal Configuración IA -->
+<div class="modal fade" id="modalConfigIA" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white fw-bold"><i class="fa-solid fa-robot text-warning me-2"></i>Configurar Inteligencia Artificial</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formConfigIA">
+                    <div class="mb-3">
+                        <label class="form-label text-info fw-bold">¿A qué disciplina o deporte se dedica el software?</label>
+                        <input type="text" class="form-control form-control-custom" name="disciplina" value="<?php echo htmlspecialchars($config_ia['disciplina'] ?? ''); ?>" required>
+                        <div class="form-text text-secondary">Ej: Trail Running, Gimnasio y Musculación, Ciclismo.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-info fw-bold">¿Qué tipo de experto es la IA?</label>
+                        <input type="text" class="form-control form-control-custom" name="rol_entrenador" value="<?php echo htmlspecialchars($config_ia['rol_entrenador'] ?? ''); ?>" required>
+                        <div class="form-text text-secondary">Ej: preparador físico experto, Coach especialista en hipertrofia.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-info fw-bold">¿Cuáles son los tipos de sesión válidos? (Separados por la barra | )</label>
+                        <input type="text" class="form-control form-control-custom" name="tipos_sesion" value="<?php echo htmlspecialchars($config_ia['tipos_sesion'] ?? ''); ?>" required>
+                        <div class="form-text text-secondary">Ej: Fondo|Fuerza|Pasadas|Regenerativo|Cuestas.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-info fw-bold">¿Cómo debe dividir la estructura de la descripción?</label>
+                        <textarea class="form-control form-control-custom" name="estructura_descripcion" rows="3" required><?php echo htmlspecialchars($config_ia['estructura_descripcion'] ?? ''); ?></textarea>
+                        <div class="form-text text-secondary">Escribe los títulos separados por un salto de línea real. Ej: <br>Entrada en calor:<br>Bloque principal:<br>Vuelta a la calma:</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-info fw-bold">¿Qué tono de comunicación debe tener?</label>
+                        <input type="text" class="form-control form-control-custom" name="tono_respuesta" value="<?php echo htmlspecialchars($config_ia['tono_respuesta'] ?? ''); ?>" required>
+                        <div class="form-text text-secondary">Ej: Profesional y motivador, Estricto y técnico.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary-custom fw-bold" onclick="guardarConfigIA()">Guardar Configuración</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function guardarConfigIA() {
+    const form = document.getElementById('formConfigIA');
+    const formData = new FormData(form);
+    
+    fetch('/actions/admin_config_ia_action.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Configuración guardada correctamente.');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.message || 'Error desconocido.'));
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error de conexión al guardar.');
+    });
+}
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

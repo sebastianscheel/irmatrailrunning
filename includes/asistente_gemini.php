@@ -113,30 +113,38 @@ IMPORTANTE: Responde ÚNICAMENTE con el objeto JSON crudo, sin etiquetas markdow
     /**
      * Genera la semana completa estructurada de entrenamientos adaptándose a directivas personalizadas.
      */
-    public function generarSemana($semana, $total_semanas, $nivel, $fase, $volumen, $dias_semana, $carrera = '', $directivas = '') {
-        $prompt = "Actúa como un preparador físico experto en Trail Running. Genera la planificación completa de entrenamientos para la semana $semana de un macrociclo de $total_semanas semanas.
+    public function generarSemana($semana, $total_semanas, $nivel, $fase, $volumen, $dias_seleccionados, $carrera = '', $directivas = '', $config_ia = []) {
+        $cantidad_dias = count($dias_seleccionados);
+        $nombres_dias = [1=>'Lunes', 2=>'Martes', 3=>'Miércoles', 4=>'Jueves', 5=>'Viernes', 6=>'Sábado', 7=>'Domingo'];
+        $lista_dias = implode(', ', array_map(function($d) use ($nombres_dias) { return "$nombres_dias[$d] ($d)"; }, $dias_seleccionados));
+        
+        $disciplina = $config_ia['disciplina'] ?? 'Trail Running';
+        $rol = $config_ia['rol_entrenador'] ?? 'preparador físico experto';
+        $tipos_sesion = $config_ia['tipos_sesion'] ?? 'Fondo|Fuerza|Pasadas|Regenerativo|Cuestas';
+        $estructura = $config_ia['estructura_descripcion'] ?? "Entrada en calor:[texto]\nBloque principal:[texto]\nVuelta a la calma:[texto]";
+        $tono = $config_ia['tono_respuesta'] ?? 'Profesional y motivador';
+
+        $prompt = "Actúa como un $rol en $disciplina. Tu tono debe ser $tono. Genera la planificación completa de entrenamientos para la semana $semana de un macrociclo de $total_semanas semanas.
 Fase actual de periodización: $fase
 Nivel del corredor: $nivel
 Volumen semanal sugerido: $volumen km
-Días de entrenamiento requeridos para esta semana: $dias_semana días.
+Días exactos de entrenamiento a programar: $lista_dias.
 
-Directivas de estructura o preferencias específicas del entrenador a seguir estrictamente:
-" . (empty($directivas) ? "Ninguna específica. Estructura la semana de forma balanceada según tu criterio profesional para Trail Running." : $directivas);
+Directivas de estructura o preferencias específicas a seguir estrictamente:
+" . (empty($directivas) ? "Estructura la semana de forma balanceada." : $directivas);
 
         if (!empty($carrera)) {
             $prompt .= "\nCarrera objetivo: $carrera";
         }
 
-        $prompt .= "\n\nDebes elegir exactamente los $dias_semana días de la semana (1 = Lunes, 2 = Martes, ..., 7 = Domingo) en los que se programarán los entrenamientos, y distribuir los $volumen km totales de la semana entre ellos de forma coherente según la fase actual. El resto de los días serán de descanso.
-
-Responde estrictamente en formato JSON utilizando el siguiente esquema:
+        $prompt .= "\n\nDEBES generar exactamente $cantidad_dias rutinas correspondientes a los días exactos mencionados ($lista_dias) y distribuir los $volumen km totales entre ellos. \n\nESTRUCTURA DE LA DESCRIPCIÓN:\nLa clave 'descripcion' DEBE estar estructurada obligatoriamente usando saltos de línea reales y estos encabezados:\n$estructura\n\nResponde estrictamente en formato JSON utilizando el siguiente esquema:
 {
   \"rutinas\": [
     {
-      \"dia\": 2, // Número de día del 1 al 7 (1 = Lunes, 7 = Domingo)
-      \"tipo_sesion\": \"Fondo|Fuerza|Pasadas|Regenerativo|Cuestas\",
-      \"titulo\": \"Título motivador y profesional del entrenamiento\",
-      \"descripcion\": \"Descripción detallada (Calentamiento, Trabajo principal con series/repeticiones/tiempos, Vuelta a la calma)\",
+      \"dia\": 2, // El número de día, DEBE ser uno de la lista proporcionada.
+      \"tipo_sesion\": \"$tipos_sesion\",
+      \"titulo\": \"Título motivador (ej: Fondo Progresivo 10k)\",
+      \"descripcion\": \"(Usa estrictamente la estructura solicitada)\",
       \"distancia_km\": 10.5, // Kilómetros de esta sesión
       \"ritmo_sugerido\": \"Ritmo sugerido (ej. '5:15 - 5:45 min/km' o 'Zona 2')\",
       \"terreno\": \"Plano|Pista|Montaña|Técnico\"

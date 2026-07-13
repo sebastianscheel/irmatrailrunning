@@ -118,6 +118,15 @@ Las plantillas son moldes genéricos que permiten guardar semanas completas de e
 2. **Aplicación:** Al querer cargarle estas semanas a un alumno, ve al botón **"Aplicar Plantilla"**.
 3. Selecciona la plantilla deseada y elige la **Fecha de inicio real** en el calendario. El sistema mapeará el "Día 1" de la plantilla en esa fecha de inicio y volcará todos los entrenamientos de forma secuencial.
 
+### Asistente de Planificación Inteligente (IA)
+El asistente permite generar entrenamientos usando Inteligencia Artificial, ajustándose estrictamente a tus necesidades:
+1. **Días exactos:** En lugar de decirle cuántos días a la semana entrena, ahora puedes **marcar los días exactos** (ej. Martes, Jueves, Sábado) con casillas de verificación. El sistema forzará matemáticamente a la IA a alojar los entrenamientos solo en esos días, respetando tu agenda a la perfección.
+2. **Configuración de la IA:** Junto al título "Configuración del Plan", encontrarás el botón **"Configurar IA"**. Al presionarlo, podrás definir la personalidad y reglas de la IA, lo cual es ideal si planeas adaptar el sistema a otros deportes. Podrás configurar:
+   - El deporte o disciplina (ej. Trail Running, Musculación).
+   - El rol del entrenador (ej. Coach experto).
+   - Los tipos de sesión válidos.
+   - La estructura obligatoria de la descripción (Calentamiento, Principal, Vuelta a la calma).
+
 ### Importación Masiva de Alumnos (CSV)
 Si tienes muchos alumnos para cargar en la plataforma de una sola vez, puedes utilizar la herramienta de importación masiva:
 1. Ve al menú **Gestión > Alumnos** y presiona **"Importar CSV"**.

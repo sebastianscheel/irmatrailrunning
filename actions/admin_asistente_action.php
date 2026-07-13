@@ -17,7 +17,16 @@ if ($action === 'generar') {
     $nivel = isset($_POST['nivel']) ? trim($_POST['nivel']) : 'Principiante';
     $objetivo = isset($_POST['objetivo']) ? trim($_POST['objetivo']) : 'Adaptación';
     $semanas = isset($_POST['semanas']) ? (int)$_POST['semanas'] : 8;
-    $dias_semana = isset($_POST['dias_semana']) ? (int)$_POST['dias_semana'] : 3;
+    
+    $dias_seleccionados = isset($_POST['dias_seleccionados']) ? $_POST['dias_seleccionados'] : [];
+    if (empty($dias_seleccionados)) {
+        echo json_encode(['success' => false, 'message' => 'Debes seleccionar al menos un día de entrenamiento.']);
+        exit;
+    }
+    $dias_seleccionados = array_map('intval', $dias_seleccionados);
+    sort($dias_seleccionados);
+    $dias_semana = count($dias_seleccionados);
+    
     $modo = isset($_POST['modo']) ? trim($_POST['modo']) : 'plantillas';
     $fecha_inicio = isset($_POST['fecha_inicio']) ? trim($_POST['fecha_inicio']) : date('Y-m-d');
     
@@ -49,6 +58,22 @@ if ($action === 'generar') {
 
         $estructura_ia = isset($_POST['estructura_ia']) ? trim($_POST['estructura_ia']) : '';
 
+        try {
+            $stmtIA = $pdo->query("SELECT * FROM configuracion_ia LIMIT 1");
+            $config_ia = $stmtIA->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            $config_ia = null;
+        }
+        if (!$config_ia) {
+            $config_ia = [
+                'disciplina' => 'Trail Running',
+                'rol_entrenador' => 'preparador físico experto',
+                'tipos_sesion' => 'Fondo|Fuerza|Pasadas|Regenerativo|Cuestas',
+                'estructura_descripcion' => "Entrada en calor:\nBloque principal:\nVuelta a la calma:",
+                'tono_respuesta' => 'Profesional y motivador'
+            ];
+        }
+
         // Generar semana a semana
         for ($w = 1; $w <= $semanas; $w++) {
             $fase = get_fase_semana($w, $semanas);
@@ -65,14 +90,16 @@ if ($action === 'generar') {
                         $nivel,
                         $fase,
                         $volumen,
-                        $dias_semana,
+                        $dias_seleccionados,
                         $carrera_info,
-                        $estructura_ia
+                        $estructura_ia,
+                        $config_ia
                     );
                     
                     if (isset($resIA['rutinas']) && is_array($resIA['rutinas'])) {
+                        $idx = 0;
                         foreach ($resIA['rutinas'] as $s) {
-                            $dia_offset = isset($s['dia']) ? (int)$s['dia'] : 1;
+                            $dia_offset = isset($dias_seleccionados[$idx]) ? $dias_seleccionados[$idx] : (isset($s['dia']) ? (int)$s['dia'] : 1);
                             $dias_totales_offset = (($w - 1) * 7) + ($dia_offset - 1);
                             $fecha_sesion = date('Y-m-d', strtotime("$fecha_inicio +$dias_totales_offset days"));
                             
@@ -86,14 +113,16 @@ if ($action === 'generar') {
                                 'ritmo_sugerido' => $s['ritmo_sugerido'] ?? 'Ritmo controlado',
                                 'terreno' => $s['terreno'] ?? 'Plano'
                             ];
+                            $idx++;
                         }
                     }
                 } catch (Exception $e) {
                     error_log("Error en Gemini al generar semana $w: " . $e->getMessage());
                     // Fallback usando estructura PHP clásica
                     $estructura = generar_estructura_semana($w, $semanas, $dias_semana, $nivel, $fase, $volumen);
+                    $idx = 0;
                     foreach ($estructura as $s) {
-                        $dia_offset = $s['dia'];
+                        $dia_offset = isset($dias_seleccionados[$idx]) ? $dias_seleccionados[$idx] : $s['dia'];
                         $dias_totales_offset = (($w - 1) * 7) + ($dia_offset - 1);
                         $fecha_sesion = date('Y-m-d', strtotime("$fecha_inicio +$dias_totales_offset days"));
                         
@@ -107,11 +136,13 @@ if ($action === 'generar') {
                             'ritmo_sugerido' => $s['ritmo_sugerido'],
                             'terreno' => $s['terreno']
                         ];
+                        $idx++;
                     }
                 }
             } else {
                 // Modo Plantillas/Biblioteca
                 $estructura = generar_estructura_semana($w, $semanas, $dias_semana, $nivel, $fase, $volumen);
+                $idx = 0;
                 foreach ($estructura as $s) {
                     // Buscar en la biblioteca por tipo de sesión
                     $candidatos = [];
@@ -131,7 +162,7 @@ if ($action === 'generar') {
                         $descripcion = "Entrenamiento de " . $s['tipo_sesion'] . " en terreno " . $s['terreno'] . ". Realizar a ritmo " . $s['ritmo_sugerido'] . ".";
                     }
                     
-                    $dia_offset = $s['dia'];
+                    $dia_offset = isset($dias_seleccionados[$idx]) ? $dias_seleccionados[$idx] : $s['dia'];
                     $dias_totales_offset = (($w - 1) * 7) + ($dia_offset - 1);
                     $fecha_sesion = date('Y-m-d', strtotime("$fecha_inicio +$dias_totales_offset days"));
                     
@@ -145,6 +176,7 @@ if ($action === 'generar') {
                         'ritmo_sugerido' => $s['ritmo_sugerido'],
                         'terreno' => $s['terreno']
                     ];
+                    $idx++;
                 }
             }
             

@@ -345,7 +345,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
 /* Animaciones hover para cards e instagram */
-.card-premium:hover { transform: translateY(-5px); }
 .btn[href*="instagram"]:hover { transform: scale(1.05); }
 
 /* Plan card hover effect */

@@ -160,7 +160,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .card-premium:hover {
-    transform: translateY(-4px);
     border-color: rgba(255, 107, 53, 0.4);
 }
 

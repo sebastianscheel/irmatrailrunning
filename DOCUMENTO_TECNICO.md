@@ -198,3 +198,20 @@ Se incorporó un carrusel dinámico y adaptativo para mostrar fotografías del g
   - Para evitar que la leyenda tape a los corredores en dispositivos móviles, se oculta la tarjeta superpuesta (`d-none d-md-block`) y se traslada dinámicamente un bloque de texto descriptivo debajo del carrusel (`#mobile-caption-container`).
   - Se desarrolló un controlador de eventos JavaScript (`slide.bs.carousel`) que captura el cambio de slide, modifica la opacidad de los textos de la descripción y actualiza el título y texto de forma fluida con una transición de 250ms.
 
+
+## 10. Módulo de IA Dinámico (Configuración y Asignación)
+
+Se ha evolucionado el asistente de inteligencia artificial para volverlo parametrizable de cara a un modelo SaaS, permitiendo reconfigurarlo sin alterar el código fuente.
+
+### Tabla `configuracion_ia`
+Se diseñó la tabla `configuracion_ia` para almacenar la personalidad ("System Prompt") de Gemini. Esto permite a administradores modificar campos clave como:
+- **`disciplina`**: El deporte principal (ej. Trail Running, Crossfit).
+- **`rol_entrenador`**: El tono y especialidad del entrenador.
+- **`tipos_sesion`**: Los tipos válidos que la IA puede estructurar.
+- **`estructura_descripcion`**: Obliga a la IA a seguir una estructura predefinida (ej. Calentamiento, Bloque Principal, Vuelta a la Calma).
+
+### Prompting Dinámico (`includes/asistente_gemini.php`)
+El método `generarSemana` fue refactorizado para aceptar el arreglo de configuración extraído de la base de datos y construir el prompt en tiempo real. Ahora interpola variables de configuración para forzar a la IA a apegarse al dominio de negocio sin alucinaciones.
+
+### Control de Días Determinista (`actions/admin_asistente_action.php`)
+Se cambió la lógica de selección de días en el frontend (pasando de un simple combo de cantidad a checkboxes por día de la semana). En el backend, un algoritmo de emparejamiento fuerza rígidamente a que las rutinas generadas por la IA caigan exactamente en los días seleccionados por el usuario, evitando que la IA infiera o coloque entrenamientos en días de descanso de forma arbitraria.
