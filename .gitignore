@@ -11,3 +11,6 @@ database.sqlite
 *.log
 .DS_Store
 Thumbs.db
+
+# Variables de Entorno
+.env
