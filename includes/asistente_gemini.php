@@ -10,12 +10,19 @@ require_once __DIR__ . '/../config/api_keys.php';
 class AsistenteGemini {
     private $apiKey;
     private $model = 'gemini-1.5-flash';
+    private $proveedor = 'Gemini';
 
-    public function __construct() {
-        if (!defined('GEMINI_API_KEY')) {
-            throw new Exception("API Key de Gemini no configurada.");
+    public function __construct($config = []) {
+        $this->proveedor = isset($config['proveedor_ia']) ? $config['proveedor_ia'] : 'Gemini';
+        
+        // Si viene api_key de la BD usarla, si no intentar usar la del .env
+        if (!empty($config['api_key'])) {
+            $this->apiKey = $config['api_key'];
+        } elseif (defined('GEMINI_API_KEY') && !empty(GEMINI_API_KEY) && GEMINI_API_KEY !== 'TU_API_KEY_DE_GEMINI_AQUI') {
+            $this->apiKey = GEMINI_API_KEY;
+        } else {
+            throw new Exception("Error: No has configurado tu API Key. Por favor ve a 'Configurar IA' para añadir tu clave de acceso o agrégala en el archivo .env");
         }
-        $this->apiKey = GEMINI_API_KEY;
     }
 
     /**

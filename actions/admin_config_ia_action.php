@@ -13,6 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $estructura_descripcion = $_POST['estructura_descripcion'] ?? '';
     $tono_respuesta = $_POST['tono_respuesta'] ?? '';
 
+    $proveedor_ia = $_POST['proveedor_ia'] ?? 'Gemini';
+    $api_key = $_POST['api_key'] ?? '';
+    $borrar_clave = isset($_POST['borrar_clave']) && $_POST['borrar_clave'] === '1';
+
     if (empty($disciplina) || empty($rol_entrenador)) {
         echo json_encode(['success' => false, 'message' => 'Faltan campos obligatorios.']);
         exit;
@@ -20,8 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         // Verificar si existe el registro
-        $stmt = $pdo->query("SELECT COUNT(*) FROM configuracion_ia");
-        $exists = $stmt->fetchColumn() > 0;
+        $stmt = $pdo->query("SELECT api_key FROM configuracion_ia LIMIT 1");
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $exists = $row !== false;
+
+        $final_api_key = $exists ? $row['api_key'] : null;
+        if ($borrar_clave) {
+            $final_api_key = null;
+        } elseif (!empty($api_key)) {
+            $final_api_key = $api_key;
+        }
 
         if ($exists) {
             $stmt = $pdo->prepare("UPDATE configuracion_ia SET 
@@ -29,10 +41,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 rol_entrenador = :rol_entrenador, 
                 tipos_sesion = :tipos_sesion, 
                 estructura_descripcion = :estructura_descripcion, 
-                tono_respuesta = :tono_respuesta
+                tono_respuesta = :tono_respuesta,
+                proveedor_ia = :proveedor_ia,
+                api_key = :api_key
             ");
         } else {
-            $stmt = $pdo->prepare("INSERT INTO configuracion_ia (disciplina, rol_entrenador, tipos_sesion, estructura_descripcion, tono_respuesta) VALUES (:disciplina, :rol_entrenador, :tipos_sesion, :estructura_descripcion, :tono_respuesta)");
+            $stmt = $pdo->prepare("INSERT INTO configuracion_ia (disciplina, rol_entrenador, tipos_sesion, estructura_descripcion, tono_respuesta, proveedor_ia, api_key) VALUES (:disciplina, :rol_entrenador, :tipos_sesion, :estructura_descripcion, :tono_respuesta, :proveedor_ia, :api_key)");
         }
 
         $stmt->execute([
@@ -40,7 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':rol_entrenador' => $rol_entrenador,
             ':tipos_sesion' => $tipos_sesion,
             ':estructura_descripcion' => $estructura_descripcion,
-            ':tono_respuesta' => $tono_respuesta
+            ':tono_respuesta' => $tono_respuesta,
+            ':proveedor_ia' => $proveedor_ia,
+            ':api_key' => $final_api_key
         ]);
 
         echo json_encode(['success' => true]);

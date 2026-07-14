@@ -196,10 +196,15 @@ try {
                         </div>
                     </div>
 
-                    <!-- Botón Generar -->
-                    <button type="submit" class="btn btn-trail w-100 py-2.5 fw-bold" id="btnGenerar">
-                        <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Generar Propuesta
-                    </button>
+                    <!-- Botones de Acción -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-trail flex-grow-1 py-2 fw-bold" id="btnGenerar">
+                            <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Generar
+                        </button>
+                        <button type="button" class="btn btn-outline-danger py-2" id="btnLimpiar" onclick="limpiarAsistente()" title="Limpiar todo y empezar de cero">
+                            <i class="fa-solid fa-broom"></i>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -448,7 +453,7 @@ function cancelarPropuesta() {
 }
 
 // Aplicar plan completo al alumno
-function aplicarPlanAlCalendario() {
+function aplicarPlanAlCalendario(confirmar = 0) {
     if (!planGeneradoGlobal) return;
     
     const alumno_id = document.getElementById('selectAlumno').value;
@@ -469,6 +474,7 @@ function aplicarPlanAlCalendario() {
     formData.append('action', 'aplicar');
     formData.append('alumno_id', alumno_id);
     formData.append('rutinas', JSON.stringify(rutinasAplanadas));
+    formData.append('confirmar_sobrescritura', confirmar);
     
     fetch('/actions/admin_asistente_action.php', {
         method: 'POST',
@@ -479,7 +485,11 @@ function aplicarPlanAlCalendario() {
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-calendar-check me-2"></i>Aplicar Plan al Alumno`;
         
-        if (data.success) {
+        if (data.conflict) {
+            if (confirm(data.message)) {
+                aplicarPlanAlCalendario(1);
+            }
+        } else if (data.success) {
             alert("¡El plan de entrenamiento ha sido aplicado y guardado con éxito!");
             window.location.href = `/admin/planificador.php?alumno_id=${alumno_id}`;
         } else {
@@ -491,6 +501,21 @@ function aplicarPlanAlCalendario() {
         btn.innerHTML = `<i class="fa-solid fa-calendar-check me-2"></i>Aplicar Plan al Alumno`;
         alert("Error de red al intentar guardar el plan.");
     });
+}
+
+// Limpiar formulario y reiniciar vista
+function limpiarAsistente() {
+    if(confirm("¿Estás seguro de que quieres borrar todos los datos del asistente y empezar de cero?")) {
+        document.getElementById('formGenerador').reset();
+        // Reset visual elements
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('planContent').style.display = 'none';
+        document.getElementById('planActions').style.display = 'none';
+        document.getElementById('accordionPlan').innerHTML = '';
+        document.getElementById('seccionCarrera').style.display = 'none';
+        document.getElementById('seccionEstructuraIA').style.display = 'none';
+        planGeneradoGlobal = null;
+    }
 }
 
 // Helpers visuales
@@ -540,6 +565,27 @@ function formatearFechaDisplay(fechaStr) {
             <div class="modal-body">
                 <form id="formConfigIA">
                     <div class="mb-3">
+                        <label class="form-label text-warning fw-bold">Proveedor de IA</label>
+                        <select name="proveedor_ia" class="form-select form-control-custom">
+                            <option value="Gemini" <?php echo (isset($config_ia['proveedor_ia']) && $config_ia['proveedor_ia'] == 'Gemini') ? 'selected' : ''; ?>>Google Gemini</option>
+                            <option value="ChatGPT" <?php echo (isset($config_ia['proveedor_ia']) && $config_ia['proveedor_ia'] == 'ChatGPT') ? 'selected' : ''; ?>>OpenAI ChatGPT</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-warning fw-bold">API Key Privada (Opcional)</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control form-control-custom border-end-0" name="api_key" placeholder="Dejar en blanco para mantener la actual o usar global">
+                            <button class="btn btn-outline-danger" type="button" onclick="borrarApiKey()" title="Borrar clave de la base de datos">
+                                <i class="fa-solid fa-trash"></i> Borrar
+                            </button>
+                        </div>
+                        <div class="form-text text-secondary">Si lo dejas vacío, se usará la clave `.env` o la que ya tenías guardada. Si ingresas una, reemplazará a la actual.</div>
+                    </div>
+                    <input type="hidden" name="borrar_clave" id="borrar_clave" value="0">
+
+                    <hr class="border-secondary my-4">
+
+                    <div class="mb-3">
                         <label class="form-label text-info fw-bold">¿A qué disciplina o deporte se dedica el software?</label>
                         <input type="text" class="form-control form-control-custom" name="disciplina" value="<?php echo htmlspecialchars($config_ia['disciplina'] ?? ''); ?>" required>
                         <div class="form-text text-secondary">Ej: Trail Running, Gimnasio y Musculación, Ciclismo.</div>
@@ -575,6 +621,14 @@ function formatearFechaDisplay(fechaStr) {
 </div>
 
 <script>
+function borrarApiKey() {
+    if (confirm("¿Seguro que deseas borrar tu API Key de la base de datos? Se volverá a usar la clave global.")) {
+        document.querySelector('input[name="api_key"]').value = '';
+        document.getElementById('borrar_clave').value = '1';
+        alert("Clave marcada para borrar. Pulsa 'Guardar Configuración' para aplicar los cambios.");
+    }
+}
+
 function guardarConfigIA() {
     const form = document.getElementById('formConfigIA');
     const formData = new FormData(form);

@@ -43,10 +43,6 @@ if ($action === 'generar') {
 
     try {
         $plan = [];
-        $asistenteGemini = null;
-        if ($modo === 'ia') {
-            $asistenteGemini = new AsistenteGemini();
-        }
 
         // Obtener rutinas de la biblioteca para Modo A (Plantillas/Sesiones)
         $biblioteca_rutinas = [];
@@ -72,6 +68,16 @@ if ($action === 'generar') {
                 'estructura_descripcion' => "Entrada en calor:\nBloque principal:\nVuelta a la calma:",
                 'tono_respuesta' => 'Profesional y motivador'
             ];
+        }
+
+        $asistenteGemini = null;
+        if ($modo === 'ia') {
+            try {
+                $asistenteGemini = new AsistenteGemini($config_ia);
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+                exit;
+            }
         }
 
         // Generar semana a semana
@@ -218,7 +224,30 @@ if ($action === 'aplicar') {
         exit;
     }
 
+    $confirmar_sobrescritura = isset($_POST['confirmar_sobrescritura']) ? (int)$_POST['confirmar_sobrescritura'] : 0;
+
     try {
+        // Paso 1: Verificación de conflictos
+        if ($confirmar_sobrescritura === 0) {
+            $fechas_conflictivas = [];
+            foreach ($rutinas as $r) {
+                $fecha = $r['fecha'];
+                $stmtCheck = $pdo->prepare("SELECT id FROM rutina_asignada WHERE alumno_id = ? AND fecha = ?");
+                $stmtCheck->execute([$alumno_id, $fecha]);
+                if ($stmtCheck->fetchColumn()) {
+                    $fechas_conflictivas[] = $fecha;
+                }
+            }
+            
+            if (count($fechas_conflictivas) > 0) {
+                echo json_encode([
+                    'conflict' => true,
+                    'message' => 'Existen ' . count($fechas_conflictivas) . ' entrenamiento(s) previamente agendado(s) en las fechas seleccionadas. ¿Deseas sobrescribirlos con la nueva planificación?'
+                ]);
+                exit;
+            }
+        }
+
         $pdo->beginTransaction();
 
         // Obtener usuario_id del alumno para notificaciones
