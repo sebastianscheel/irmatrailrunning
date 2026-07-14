@@ -5,6 +5,9 @@ require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/asistente_planificacion_engine.php';
 require_once __DIR__ . '/../includes/asistente_gemini.php';
 
+// Aumentar el tiempo límite de ejecución para peticiones a la API de IA (hasta 3 mins)
+set_time_limit(180);
+
 // Validar que sea admin o entrenador total
 require_rol(['admin', 'entrenador_total']);
 
